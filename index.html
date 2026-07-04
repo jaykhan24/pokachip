@@ -199,6 +199,9 @@ header{
       <button data-tab="meta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>정보
       </button>
+      <button data-tab="layout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="10" rx="2"/><path d="M6 18h12M8 21h8"/></svg>배치
+      </button>
       <button data-tab="text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>텍스트
       </button>
@@ -1077,18 +1080,23 @@ function renderDock(){
     add(state.export.fmt.toUpperCase(), {cb:()=>{ state.export.fmt = state.export.fmt==='jpg'?'png':'jpg'; renderDock(); }});
   }
   else if(activeTab === 'meta'){
+    // 무엇을 보여줄지: 항목 on/off + 날짜 표기
     const labels = {datetime:'날짜', location:'위치', camera:'기기', detail:'상세'};
     for(const k of ['datetime','location','camera','detail'])
       add(labels[k], {on:o.show[k], cb:()=>{ o.show[k] = !o.show[k]; syncMetaTexts(true); }});
-    const presets = {below:'아래', above:'위', split:'위·아래'};
-    for(const k in presets)
-      add(presets[k], {on:o.preset===k, cb:()=>{ o.preset=k; applyPresetOrds(); relayoutAll(); renderDock(); }});
     const fmts = ['dot','kor','eng','short'];
     add('🗓 '+DATE_SAMPLES[o.dateFormat], {cb:()=>{ o.dateFormat = fmts[(fmts.indexOf(o.dateFormat)+1)%fmts.length]; syncMetaTexts(false); }});
     add('시간', {on:o.showTime, cb:()=>{ o.showTime = !o.showTime; syncMetaTexts(false); }});
-    add(o.color==='#ffffff'?'색: 흰':'색: 검', {cb:()=>{ o.color = o.color==='#ffffff'?'#111111':'#ffffff'; syncMetaTexts(false); }});
+    add('⭐ 기본값 저장', {cb:saveDefaults});
+  }
+  else if(activeTab === 'layout'){
+    // 어떻게 배치할지: 위치 프리셋 + 정보 텍스트 스타일
+    const presets = {below:'사진 아래', above:'사진 위', split:'위·아래'};
+    for(const k in presets)
+      add(presets[k], {on:o.preset===k, cb:()=>{ o.preset=k; applyPresetOrds(); relayoutAll(); renderDock(); }});
     add('폰트', {act:dockAltKey==='font-meta', cb:()=>openAlt('font-meta')});
     add('크기', {act:dockParam==='metaSize', cb:()=>openSlider('metaSize')});
+    add(o.color==='#ffffff'?'색: 흰':'색: 검', {cb:()=>{ o.color = o.color==='#ffffff'?'#111111':'#ffffff'; syncMetaTexts(false); }});
     add('⭐ 기본값 저장', {cb:saveDefaults});
   }
   else if(activeTab === 'text'){
