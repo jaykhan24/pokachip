@@ -93,84 +93,29 @@ header{
 .guide-v{position:absolute;top:0;bottom:0;left:540px;width:2px;margin-left:-1px;background:rgba(255,213,74,.75);display:none;pointer-events:none}
 .guide-h{position:absolute;left:0;right:0;top:960px;height:2px;margin-top:-1px;background:rgba(255,213,74,.75);display:none;pointer-events:none}
 
-/* ---------- 패널 ---------- */
-#panel{
-  background:var(--surface);border-top:1px solid var(--line);
-  flex:none;display:none;overflow-y:auto;z-index:25;
-  overscroll-behavior:contain;
+/* ---------- 하단 도크 (Lightroom 스타일) ---------- */
+#dock{flex:none;background:var(--surface);border-top:1px solid var(--line)}
+.dock-row{display:flex;gap:8px;overflow-x:auto;padding:10px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:center}
+.dock-row::-webkit-scrollbar{display:none}
+.dock-row.alt{padding-bottom:0}
+.chip-btn{
+  flex:none;height:38px;padding:0 14px;border-radius:19px;background:var(--surface2);
+  font-size:13px;font-weight:600;color:var(--text-dim);border:1.5px solid transparent;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
 }
-#panel.open{display:block}
-.panel-sec{display:none;padding:18px 18px calc(18px + var(--safe-b))}
-.panel-sec.active{display:block}
-.p-title{font-size:12px;font-weight:700;color:var(--text-dim);letter-spacing:.08em;margin:20px 0 10px}
-.p-title:first-child{margin-top:0}
-.row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.row label{font-size:13px;color:var(--text-dim);flex:none;width:64px}
-.row input[type=range]{flex:1;accent-color:var(--accent);height:26px}
-.row .val{font-size:12px;color:var(--text-dim);width:44px;text-align:right;font-family:'IBM Plex Mono',monospace}
-
-.seg{display:flex;background:var(--surface2);border-radius:10px;padding:3px;gap:3px;flex:1}
-.seg button{flex:1;padding:8px 4px;font-size:12.5px;font-weight:600;border-radius:8px;color:var(--text-dim);transition:.15s}
-.seg button.on{background:#34343f;color:var(--text)}
-
-.chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px}
-.chip{
-  width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;
-  transition:transform .12s;flex:none;
-}
-.chip.on{border-color:var(--accent);transform:scale(1.14)}
-.chip.custom{display:flex;align-items:center;justify-content:center;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);position:relative;overflow:hidden}
-.chip.custom input{position:absolute;inset:0;opacity:0;cursor:pointer}
-
-.font-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.font-chip{
-  padding:9px 14px;border-radius:10px;background:var(--surface2);font-size:15px;
-  border:1.5px solid transparent;color:var(--text)
-}
-.font-chip.on{border-color:var(--accent);color:var(--accent)}
-
-.btn{
-  width:100%;padding:12px;border-radius:11px;background:var(--surface2);
-  font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.btn.primary{background:var(--accent);color:var(--accent-text)}
-.btn.small{width:auto;padding:9px 14px;font-size:13px;margin:0}
-.btn:active{transform:scale(.98)}
-
-textarea#textInput{
-  width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:11px;
-  color:var(--text);padding:11px;font-size:14px;resize:none;height:74px;margin-bottom:12px;
-}
-textarea#textInput:focus{outline:none;border-color:var(--accent)}
-
-/* 메타 목록 */
-.meta-item{
-  display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid var(--line);
-}
-.meta-item:last-child{border-bottom:none}
-.meta-item .mi-body{flex:1;min-width:0}
-.meta-item .mi-key{font-size:11px;color:var(--text-dim);letter-spacing:.05em}
-.meta-item .mi-val{font-size:13.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.switch{position:relative;width:42px;height:24px;flex:none}
-.switch input{opacity:0;width:0;height:0}
-.switch i{
-  position:absolute;inset:0;background:var(--surface2);border-radius:24px;transition:.18s;
-  border:1px solid var(--line);display:block;
-}
-.switch i:before{
-  content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#888;
-  top:2px;left:2px;transition:.18s;
-}
-.switch input:checked+i{background:var(--accent);border-color:var(--accent)}
-.switch input:checked+i:before{background:#1a1a1a;transform:translateX(18px)}
-
-select.sel{
-  flex:1;background:var(--surface2);border:1px solid var(--line);color:var(--text);
-  padding:9px 11px;border-radius:10px;font-size:13px;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9aa6' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 12px center;
-}
-.hint{font-size:12px;color:var(--text-dim);line-height:1.6;margin-top:6px}
+.chip-btn.on{color:var(--accent);border-color:var(--accent)}
+.chip-btn.act{background:#3a3a46;color:var(--text)}
+.chip-btn:active{transform:scale(.95)}
+.dot{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);padding:0}
+.dot.on{border-color:var(--accent);transform:scale(1.1)}
+.dot.custom{display:flex;align-items:center;justify-content:center;position:relative;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);overflow:hidden;font-size:14px;cursor:pointer}
+.dot.custom input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.dock-slider{display:flex;align-items:center;gap:12px;padding:12px 16px 2px}
+.dock-slider span{font-size:12px;color:var(--text-dim);flex:none}
+#dsLabel{width:52px}
+#dsVal{width:48px;text-align:right;font-family:'IBM Plex Mono',monospace}
+.dock-slider input{flex:1;accent-color:var(--accent);height:28px}
+.dock-slider[hidden],.dock-row[hidden]{display:none}
 
 /* ---------- 탭바 ---------- */
 #tabbar{
@@ -186,7 +131,7 @@ select.sel{
 
 /* 토스트 */
 #toast{
-  position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 20px);transform:translateX(-50%) translateY(20px);
+  position:fixed;left:50%;bottom:calc(var(--tabbar-h) + var(--safe-b) + 128px);transform:translateX(-50%) translateY(20px);
   background:rgba(240,240,245,.96);color:#111;padding:10px 18px;border-radius:12px;
   font-size:13.5px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:99;
   max-width:85vw;text-align:center;
@@ -195,20 +140,9 @@ select.sel{
 
 /* ---------- PC 레이아웃 ---------- */
 @media(min-width:900px){
-  #main{flex-direction:row}
-  #previewArea{order:1;padding:28px;min-width:0}
-  #tabbar{
-    order:2;position:static;height:auto;width:66px;flex:none;flex-direction:column;
-    justify-content:flex-start;padding:10px 0 0;border-top:none;border-left:1px solid var(--line);
-    gap:4px;
-  }
-  #tabbar button{flex:none;height:60px;width:100%}
-  #panel{
-    display:block;width:340px;flex:none;order:3;max-height:none;
-    border-top:none;border-left:1px solid var(--line);
-  }
-  #panel:not(.open){display:block}
-  #toast{bottom:30px}
+  #previewArea{padding:28px}
+  #dock,#tabbar{max-width:640px;width:100%;margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  #toast{bottom:130px}
 }
 </style>
 </head>
@@ -248,130 +182,14 @@ select.sel{
       </div>
     </div>
 
-    <div id="panel">
-      <!-- 사진 -->
-      <section class="panel-sec" data-panel="photo">
-        <button class="btn primary" id="pickBtn">🖼️ 사진 선택 / 교체</button>
-        <div class="p-title">사진 비율</div>
-        <div class="row">
-          <div class="seg" id="ratioSeg">
-            <button data-ratio="3:4" class="on">3:4</button>
-            <button data-ratio="4:5">4:5</button>
-            <button data-ratio="1:1">1:1</button>
-            <button data-ratio="4:3">4:3</button>
-            <button data-ratio="orig">원본</button>
-          </div>
-        </div>
-        <div class="row">
-          <button class="btn small" id="rotL" style="flex:1">↺ 왼쪽 회전</button>
-          <button class="btn small" id="rotR" style="flex:1">↻ 오른쪽 회전</button>
-        </div>
-        <div class="p-title">크기 · 구도</div>
-        <div class="row"><label>너비</label><input type="range" id="photoWidth" min="50" max="100" step="1" value="85"><span class="val" id="photoWidthVal">85%</span></div>
-        <div class="row"><label>확대</label><input type="range" id="photoZoom" min="100" max="300" step="1" value="100"><span class="val" id="photoZoomVal">100%</span></div>
-        <div class="row"><label>모서리</label><input type="range" id="photoRadius" min="0" max="80" step="1" value="28"><span class="val" id="photoRadiusVal">28</span></div>
-        <button class="btn" id="photoReset">구도 초기화</button>
-        <div class="p-title">내보내기</div>
-        <div class="row"><label>해상도</label>
-          <div class="seg" id="exportScaleSeg">
-            <button data-x="1" class="on">1080×1920</button>
-            <button data-x="2">2160×3840</button>
-          </div>
-        </div>
-        <div class="row"><label>형식</label>
-          <div class="seg" id="exportFmtSeg">
-            <button data-fmt="jpg" class="on">JPG</button>
-            <button data-fmt="png">PNG</button>
-          </div>
-        </div>
-        <p class="hint">사진은 항상 화면 중앙에 배치돼요. 사진을 드래그하면 비율 안에서 보이는 구도가 움직이고, 두 손가락(또는 마우스 휠)으로 확대할 수 있어요.</p>
-      </section>
-
-      <!-- 정보(메타) -->
-      <section class="panel-sec" data-panel="meta">
-        <div class="p-title">사진 정보 표시</div>
-        <div id="metaList"></div>
-        <div class="p-title">날짜 형식</div>
-        <div class="row"><select class="sel" id="dateFormat">
-          <option value="dot">2026. 7. 4 (sat)</option>
-          <option value="kor">2026년 7월 4일 (토)</option>
-          <option value="eng">JUL 4, 2026 (SAT)</option>
-          <option value="short">26. 7. 4 (sat)</option>
-        </select></div>
-        <div class="row"><label style="width:auto;flex:1">시간 함께 표시</label>
-          <label class="switch"><input type="checkbox" id="showTime" checked><i></i></label>
-        </div>
-        <div class="p-title">배치</div>
-        <div class="row">
-          <div class="seg" id="presetSeg">
-            <button data-preset="below" class="on">사진 아래</button>
-            <button data-preset="above">사진 위</button>
-            <button data-preset="split">위 · 아래</button>
-          </div>
-        </div>
-        <div class="p-title">스타일</div>
-        <div class="row"><label>폰트</label><select class="sel" id="metaFont"></select></div>
-        <div class="row"><label>크기</label><input type="range" id="metaSize" min="60" max="160" value="100"><span class="val" id="metaSizeVal">100%</span></div>
-        <div class="row"><label>색상</label>
-          <div class="seg" id="metaColorSeg">
-            <button data-c="#ffffff" class="on">흰색</button>
-            <button data-c="#111111">검정</button>
-          </div>
-        </div>
-        <button class="btn" id="saveDefaults">⭐ 현재 구성을 기본값으로 저장</button>
-        <p class="hint">사진과 텍스트는 겹치지 않게 한 줄씩 쌓이고 전체가 가운데 정렬돼요. 텍스트를 드래그하면 줄 순서가 바뀌고, 더블탭(더블클릭)하면 내용을 수정할 수 있어요. 위치 정보는 GPS 좌표를 지역명으로 변환해요(인터넷 필요).</p>
-      </section>
-
-      <!-- 텍스트 -->
-      <section class="panel-sec" data-panel="text">
-        <textarea id="textInput" placeholder="텍스트 입력…"></textarea>
-        <button class="btn primary" id="addTextBtn">＋ 텍스트 추가</button>
-        <div class="p-title">폰트</div>
-        <div class="font-chips" id="fontChips"></div>
-        <div class="p-title">스타일</div>
-        <div class="row"><label>크기</label><input type="range" id="textSize" min="24" max="160" value="52"><span class="val" id="textSizeVal">52</span></div>
-        <div class="row"><label>색상</label></div>
-        <div class="chips" id="textColorChips"></div>
-        <div class="row"><label>배경</label>
-          <div class="seg" id="pillSeg">
-            <button data-pill="none" class="on">없음</button>
-            <button data-pill="dark">어둡게</button>
-            <button data-pill="light">밝게</button>
-          </div>
-        </div>
-        <div class="row"><label>정렬</label>
-          <div class="seg" id="alignSeg">
-            <button data-align="left">왼쪽</button>
-            <button data-align="center" class="on">가운데</button>
-          </div>
-        </div>
-        <p class="hint">텍스트를 선택하면 이 패널에서 바로 수정돼요.</p>
-      </section>
-
-      <!-- 배경 -->
-      <section class="panel-sec" data-panel="bg">
-        <div class="p-title">배경 유형</div>
-        <div class="row">
-          <div class="seg" id="bgModeSeg">
-            <button data-mode="blur" class="on">사진 블러</button>
-            <button data-mode="color">단색</button>
-            <button data-mode="gradient">그라데이션</button>
-          </div>
-        </div>
-        <div id="bgBlurOpts">
-          <div class="row"><label>블러</label><input type="range" id="bgBlur" min="0" max="120" value="48"><span class="val" id="bgBlurVal">48</span></div>
-          <div class="row"><label>어둡게</label><input type="range" id="bgDimR" min="0" max="70" value="22"><span class="val" id="bgDimVal">22%</span></div>
-        </div>
-        <div id="bgColorOpts" style="display:none">
-          <div class="p-title">컬러칩</div>
-          <div class="chips" id="bgColorChips"></div>
-        </div>
-        <div id="bgGradOpts" style="display:none">
-          <button class="btn" id="gradFromPhoto">🎨 사진에서 색 추출</button>
-          <div class="row"><label>위 색상</label><input type="color" id="gradC1" value="#3a3a52" style="flex:1;height:36px;border:none;background:none"></div>
-          <div class="row"><label>아래 색상</label><input type="color" id="gradC2" value="#1a1a24" style="flex:1;height:36px;border:none;background:none"></div>
-        </div>
-      </section>
+    <div id="dock">
+      <div id="dockSlider" class="dock-slider" hidden>
+        <span id="dsLabel"></span>
+        <input type="range" id="dsRange">
+        <span id="dsVal"></span>
+      </div>
+      <div id="dockAlt" class="dock-row alt" hidden></div>
+      <div id="dockRow" class="dock-row"></div>
     </div>
 
     <nav id="tabbar">
@@ -835,10 +653,7 @@ function renderPhoto(){
   photoEl.style.width = dw+'px'; photoEl.style.height = dh+'px';
   photoEl.style.left = (r.w-dw)/2 + p.ox + 'px';
   photoEl.style.top = (r.h-dh)/2 + p.oy + 'px';
-  $('#photoWidth').value = Math.round(p.width*100);
-  $('#photoWidthVal').textContent = Math.round(p.width*100)+'%';
-  $('#photoZoom').value = Math.round(p.zoom*100);
-  $('#photoZoomVal').textContent = Math.round(p.zoom*100)+'%';
+  refreshDockSlider();
 }
 
 function renderBg(){
@@ -977,24 +792,7 @@ function reorderText(t, y){
   layoutMeta(); renderPhoto(); renderTexts();
 }
 
-function renderMetaList(){
-  const list = $('#metaList');
-  const m = state.meta, o = state.metaOpts;
-  const rows = [
-    {key:'datetime', label:'날짜 · 시간', val: m.date ? fmtDatetime(m.date) : '—'},
-    {key:'location', label:'위치',       val: m.locationName || (m.lat!=null?`${m.lat.toFixed(4)}, ${m.lon.toFixed(4)}${m.locPending?' (지역명 검색 중…)':''}`:'—')},
-    {key:'camera',   label:'촬영 기기',  val: m.camera || '—'},
-    {key:'detail',   label:'촬영 정보',  val: m.detail || '—'},
-  ];
-  list.innerHTML = rows.map(r=>`
-    <div class="meta-item">
-      <div class="mi-body"><div class="mi-key">${r.label}</div><div class="mi-val">${r.val}</div></div>
-      <label class="switch"><input type="checkbox" data-metakey="${r.key}" ${o.show[r.key]?'checked':''}><i></i></label>
-    </div>`).join('');
-  list.querySelectorAll('input[data-metakey]').forEach(cb=>{
-    cb.onchange = () => { o.show[cb.dataset.metakey] = cb.checked; syncMetaTexts(true); };
-  });
-}
+function renderMetaList(){ renderDock(); }
 
 /* =====================================================
    파일 로드
@@ -1047,7 +845,6 @@ async function loadFile(file){
 }
 
 $('#fileInput').addEventListener('change', e=>{ loadFile(e.target.files[0]); e.target.value=''; });
-$('#pickBtn').onclick = ()=>$('#fileInput').click();
 $('#emptyState').onclick = ()=>$('#fileInput').click();
 stage.addEventListener('dragover', e=>e.preventDefault());
 stage.addEventListener('drop', e=>{ e.preventDefault(); loadFile(e.dataTransfer.files[0]); });
@@ -1204,49 +1001,218 @@ $('#resetSelBtn').onclick = ()=>{
 };
 
 /* =====================================================
-   패널 UI 바인딩
+   하단 도크 UI (Lightroom / Instagram 모바일 스타일)
+   1행: 탭별 가로 스크롤 칩 · 2행: 선택한 파라미터의 슬라이더 또는 보조 칩
 ===================================================== */
-// 탭
-const panel = $('#panel');
 let activeTab = 'photo';
-function setTab(name, toggle){
-  const isDesktop = matchMedia('(min-width:900px)').matches;
-  if(toggle && !isDesktop && name === activeTab && panel.classList.contains('open')){
-    panel.classList.remove('open');
-    $$('#tabbar button').forEach(b=>b.classList.toggle('on', false));
-    setTimeout(fitStage, 50);
-    return;
+let dockParam = null;   // 열려 있는 슬라이더 키
+let dockAltKey = null;  // 열려 있는 보조 행 (폰트/색상)
+const textStyle = { font:'noto', size:52, color:'#ffffff', pill:'none', align:'center' };
+
+function relayoutAll(){ layoutMeta(); renderPhoto(); renderTexts(); }
+function selText(){ return findText(state.selected); }
+function applyToSelected(fn){ const t = selText(); if(!t) return; fn(t); relayoutAll(); }
+
+const SLIDERS = {
+  width:   {label:'너비',   min:50,  max:100, get:()=>Math.round(state.photo.width*100), set:v=>{state.photo.width=v/100; relayoutAll();}, fmt:v=>v+'%'},
+  zoom:    {label:'확대',   min:100, max:300, get:()=>Math.round(state.photo.zoom*100),  set:v=>{state.photo.zoom=v/100; renderPhoto();},  fmt:v=>v+'%'},
+  radius:  {label:'모서리', min:0,   max:80,  get:()=>state.photo.radius,                set:v=>{state.photo.radius=v; renderPhoto();},    fmt:v=>String(v)},
+  metaSize:{label:'크기',   min:60,  max:160, get:()=>Math.round(state.metaOpts.sizeMul*100), set:v=>{state.metaOpts.sizeMul=v/100; syncMetaTexts(false);}, fmt:v=>v+'%'},
+  textSize:{label:'크기',   min:24,  max:160, get:()=>Math.round(selText()?.size ?? textStyle.size), set:v=>{textStyle.size=v; applyToSelected(t=>{t.size=v; t.userStyled=true;});}, fmt:v=>String(v)},
+  blur:    {label:'블러',   min:0,   max:120, get:()=>state.bg.blur,                     set:v=>{state.bg.blur=v; renderBg();},            fmt:v=>String(v)},
+  dim:     {label:'어둡기', min:0,   max:70,  get:()=>Math.round(state.bg.dim*100),      set:v=>{state.bg.dim=v/100; renderBg();},         fmt:v=>v+'%'},
+};
+
+const dockRow = $('#dockRow'), dockSliderEl = $('#dockSlider'), dockAltEl = $('#dockAlt');
+
+function mkChip(label, {on=false, act=false, cb}={}){
+  const b = document.createElement('button');
+  b.className = 'chip-btn' + (on ? ' on' : '') + (act ? ' act' : '');
+  b.innerHTML = label;
+  b.onclick = cb;
+  return b;
+}
+function mkDot(color, on, cb){
+  const b = document.createElement('button');
+  b.className = 'dot' + (on ? ' on' : '');
+  b.style.background = color;
+  b.onclick = cb;
+  return b;
+}
+function customDot(cb){
+  const l = document.createElement('label');
+  l.className = 'dot custom'; l.textContent = '🎨';
+  const i = document.createElement('input'); i.type = 'color';
+  i.oninput = ()=>cb(i.value);
+  l.appendChild(i);
+  return l;
+}
+function openSlider(key){ dockAltKey = null; dockParam = dockParam===key ? null : key; renderDock(); }
+function openAlt(key){ dockParam = null; dockAltKey = dockAltKey===key ? null : key; renderDock(); }
+function refreshDockSlider(){
+  if(!dockParam || dockSliderEl.hidden) return;
+  const s = SLIDERS[dockParam];
+  $('#dsRange').value = s.get();
+  $('#dsVal').textContent = s.fmt(s.get());
+}
+
+const DATE_SAMPLES = {dot:'2026. 7. 4 (sat)', kor:'7월 4일 (토)', eng:'JUL 4 (SAT)', short:'26. 7. 4'};
+
+function renderDock(){
+  dockRow.innerHTML = '';
+  const add = (label, o) => dockRow.appendChild(mkChip(label, o));
+  const p = state.photo, o = state.metaOpts, b = state.bg;
+  const t = selText();
+
+  if(activeTab === 'photo'){
+    add('🖼 선택', {cb:()=>$('#fileInput').click()});
+    for(const r of ['3:4','4:5','1:1','4:3','orig'])
+      add(r==='orig'?'원본':r, {on:p.ratio===r, cb:()=>{ p.ratio=r; p.ox=0; p.oy=0; relayoutAll(); renderDock(); }});
+    add('↺', {cb:()=>rotatePhoto(-1)});
+    add('↻', {cb:()=>rotatePhoto(1)});
+    for(const k of ['width','zoom','radius'])
+      add(SLIDERS[k].label, {act:dockParam===k, cb:()=>openSlider(k)});
+    add('구도 초기화', {cb:()=>{ p.zoom=1; p.ox=0; p.oy=0; renderPhoto(); refreshDockSlider(); }});
+    add(state.export.scale===1?'1080p':'2160p', {cb:()=>{ state.export.scale = state.export.scale===1?2:1; renderDock(); }});
+    add(state.export.fmt.toUpperCase(), {cb:()=>{ state.export.fmt = state.export.fmt==='jpg'?'png':'jpg'; renderDock(); }});
   }
+  else if(activeTab === 'meta'){
+    const labels = {datetime:'날짜', location:'위치', camera:'기기', detail:'상세'};
+    for(const k of ['datetime','location','camera','detail'])
+      add(labels[k], {on:o.show[k], cb:()=>{ o.show[k] = !o.show[k]; syncMetaTexts(true); }});
+    const presets = {below:'아래', above:'위', split:'위·아래'};
+    for(const k in presets)
+      add(presets[k], {on:o.preset===k, cb:()=>{ o.preset=k; applyPresetOrds(); relayoutAll(); renderDock(); }});
+    const fmts = ['dot','kor','eng','short'];
+    add('🗓 '+DATE_SAMPLES[o.dateFormat], {cb:()=>{ o.dateFormat = fmts[(fmts.indexOf(o.dateFormat)+1)%fmts.length]; syncMetaTexts(false); }});
+    add('시간', {on:o.showTime, cb:()=>{ o.showTime = !o.showTime; syncMetaTexts(false); }});
+    add(o.color==='#ffffff'?'색: 흰':'색: 검', {cb:()=>{ o.color = o.color==='#ffffff'?'#111111':'#ffffff'; syncMetaTexts(false); }});
+    add('폰트', {act:dockAltKey==='font-meta', cb:()=>openAlt('font-meta')});
+    add('크기', {act:dockParam==='metaSize', cb:()=>openSlider('metaSize')});
+    add('⭐ 기본값 저장', {cb:saveDefaults});
+  }
+  else if(activeTab === 'text'){
+    add('＋ 추가', {cb:addNewText});
+    add('폰트', {act:dockAltKey==='font-text', cb:()=>openAlt('font-text')});
+    add('크기', {act:dockParam==='textSize', cb:()=>openSlider('textSize')});
+    add('색상', {act:dockAltKey==='color-text', cb:()=>openAlt('color-text')});
+    const pills = {none:'배경 없음', dark:'배경 어둡게', light:'배경 밝게'};
+    const curPill = t ? (t.pill||'none') : textStyle.pill;
+    add(pills[curPill], {cb:()=>{
+      const ks = Object.keys(pills);
+      const nx = ks[(ks.indexOf(curPill)+1)%ks.length];
+      textStyle.pill = nx; applyToSelected(x=>x.pill=nx); renderDock();
+    }});
+    const curA = t ? t.align : textStyle.align;
+    add(curA==='center'?'☰ 가운데':'☰ 왼쪽', {cb:()=>{
+      const nx = curA==='center'?'left':'center';
+      textStyle.align = nx; applyToSelected(x=>x.align=nx); renderDock();
+    }});
+    if(t) add('🗑 삭제', {cb:()=>$('#delSelBtn').click()});
+  }
+  else if(activeTab === 'bg'){
+    const modes = {blur:'사진 블러', color:'단색', gradient:'그라데이션'};
+    for(const k in modes)
+      add(modes[k], {on:b.mode===k, cb:()=>{
+        b.mode = k; renderBg();
+        dockParam = null;
+        dockAltKey = k==='color' ? 'color-bg' : null;
+        renderDock();
+      }});
+    if(b.mode==='blur'){
+      add('블러', {act:dockParam==='blur', cb:()=>openSlider('blur')});
+      add('어둡기', {act:dockParam==='dim', cb:()=>openSlider('dim')});
+    }
+    if(b.mode==='color')
+      add('컬러', {act:dockAltKey==='color-bg', cb:()=>openAlt('color-bg')});
+    if(b.mode==='gradient'){
+      add('🎨 사진에서 추출', {cb:gradFromPhoto});
+      add('위 색', {cb:()=>pickColor(c=>{ b.c1=c; renderBg(); })});
+      add('아래 색', {cb:()=>pickColor(c=>{ b.c2=c; renderBg(); })});
+    }
+  }
+
+  // 2행: 슬라이더 또는 보조 칩
+  dockSliderEl.hidden = !dockParam;
+  if(dockParam){
+    const s = SLIDERS[dockParam];
+    $('#dsLabel').textContent = s.label;
+    const r = $('#dsRange');
+    r.min = s.min; r.max = s.max; r.value = s.get();
+    $('#dsVal').textContent = s.fmt(s.get());
+    r.oninput = ()=>{ s.set(+r.value); $('#dsVal').textContent = s.fmt(+r.value); };
+  }
+  dockAltEl.hidden = !dockAltKey;
+  if(dockAltKey) renderDockAlt();
+  setTimeout(fitStage, 30);
+}
+
+function renderDockAlt(){
+  dockAltEl.innerHTML = '';
+  const add = el => dockAltEl.appendChild(el);
+  if(dockAltKey === 'font-meta' || dockAltKey === 'font-text'){
+    const isMeta = dockAltKey === 'font-meta';
+    const cur = isMeta ? state.metaOpts.font : (selText()?.font || textStyle.font);
+    for(const f of FONTS){
+      const chip = mkChip(f.label, {on:cur===f.key, cb:()=>{
+        if(isMeta){ state.metaOpts.font = f.key; syncMetaTexts(false); }
+        else { textStyle.font = f.key; applyToSelected(t=>{ t.font=f.key; t.userStyled=true; }); }
+        renderDockAlt();
+      }});
+      chip.style.fontFamily = `'${f.family}', sans-serif`;
+      chip.style.fontSize = '15px';
+      add(chip);
+    }
+  } else if(dockAltKey === 'color-text'){
+    const cur = selText()?.color || textStyle.color;
+    for(const c of TEXT_COLORS)
+      add(mkDot(c, cur===c, ()=>{ textStyle.color=c; applyToSelected(t=>{t.color=c; t.userStyled=true;}); renderDockAlt(); }));
+    add(customDot(c=>{ textStyle.color=c; applyToSelected(t=>{t.color=c; t.userStyled=true;}); }));
+  } else if(dockAltKey === 'color-bg'){
+    for(const c of BG_COLORS)
+      add(mkDot(c, state.bg.color===c, ()=>{ state.bg.color=c; renderBg(); renderDockAlt(); }));
+    add(customDot(c=>{ state.bg.color=c; renderBg(); }));
+  }
+}
+
+// 숨은 컬러 피커 (그라데이션 색 지정)
+function pickColor(cb){
+  const i = document.createElement('input');
+  i.type = 'color';
+  i.style.cssText = 'position:fixed;left:-100px;top:0;opacity:0';
+  document.body.appendChild(i);
+  i.oninput = ()=>cb(i.value);
+  i.onchange = ()=>setTimeout(()=>i.remove(), 500);
+  i.click();
+}
+
+// 인스타그램 스타일: 추가하면 바로 캔버스에서 입력 시작
+function addNewText(){
+  const maxOrd = Math.max(0, ...state.texts.map(x=>x.ord??0));
+  const t = { id:'t'+(idSeq++), kind:'user', text:'텍스트', x:CW/2, y:CH/2, ord:maxOrd+1,
+    size:textStyle.size, font:textStyle.font, weight:500, color:textStyle.color,
+    pill:textStyle.pill, align:textStyle.align };
+  state.texts.push(t);
+  state.selected = t.id;
+  relayoutAll();
+  startEdit(t.id);
+}
+
+// 텍스트를 선택하면 텍스트 탭으로 전환해 해당 스타일 칩 표시
+function syncTextPanel(t){
+  if(!t) return;
+  if(activeTab !== 'text') setTab('text');
+  else renderDock();
+}
+
+function setTab(name){
   activeTab = name;
-  panel.classList.add('open');
+  dockParam = null; dockAltKey = null;
   $$('#tabbar button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
-  $$('.panel-sec').forEach(s=>s.classList.toggle('active', s.dataset.panel===name));
-  setTimeout(fitStage, 50);
+  renderDock();
 }
-$$('#tabbar button').forEach(b=> b.onclick = ()=>setTab(b.dataset.tab, true));
+$$('#tabbar button').forEach(b=> b.onclick = ()=>setTab(b.dataset.tab));
 
-// 모바일에선 패널 높이 제한
-function setupPanelMode(){
-  const isDesktop = matchMedia('(min-width:900px)').matches;
-  panel.style.maxHeight = isDesktop ? '' : '42dvh';
-  if(isDesktop) panel.classList.add('open');
-  fitStage();
-}
-matchMedia('(min-width:900px)').addEventListener('change', setupPanelMode);
-
-/* --- 사진 패널 --- */
-$('#photoWidth').oninput = e=>{
-  state.photo.width = +e.target.value/100;
-  $('#photoWidthVal').textContent = e.target.value+'%';
-  layoutMeta(); renderPhoto(); renderTexts();
-};
-$('#photoZoom').oninput = e=>{
-  state.photo.zoom = +e.target.value/100;
-  $('#photoZoomVal').textContent = e.target.value+'%';
-  renderPhoto();
-};
-$('#photoRadius').oninput = e=>{ state.photo.radius = +e.target.value; $('#photoRadiusVal').textContent = e.target.value; renderPhoto(); };
-$('#photoReset').onclick = ()=>{ state.photo.zoom=1; state.photo.ox=0; state.photo.oy=0; renderPhoto(); };
 // 90° 회전 — 화질 누적 손실이 없도록 항상 원본에서 누적 각도로 한 번에 회전
 let rotating = false;
 async function rotatePhoto(dir){
@@ -1255,171 +1221,31 @@ async function rotatePhoto(dir){
   rotating = true;
   try{
     p.rot = ((p.rot||0) + (dir > 0 ? 90 : 270)) % 360;
-    const map = {0:1, 90:6, 180:3, 270:8}; // 각도 → EXIF Orientation
+    const map = {0:1, 90:6, 180:3, 270:8};
     p.img = p.rot === 0 ? p.original : await orientImage(p.original, map[p.rot]);
     p.ox = 0; p.oy = 0;
-    renderBg(); layoutMeta(); renderPhoto(); renderTexts();
+    renderBg(); relayoutAll();
   } finally { rotating = false; }
 }
-$('#rotL').onclick = ()=>rotatePhoto(-1);
-$('#rotR').onclick = ()=>rotatePhoto(1);
-$('#ratioSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  state.photo.ratio = b.dataset.ratio;
-  state.photo.ox = 0; state.photo.oy = 0;
-  $$('#ratioSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  layoutMeta(); renderPhoto(); renderTexts();
-};
-$('#exportScaleSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  state.export.scale = +b.dataset.x;
-  $$('#exportScaleSeg button').forEach(x=>x.classList.toggle('on', x===b));
-};
-$('#exportFmtSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  state.export.fmt = b.dataset.fmt;
-  $$('#exportFmtSeg button').forEach(x=>x.classList.toggle('on', x===b));
-};
 
-/* --- 정보 패널 --- */
-$('#dateFormat').onchange = e=>{ state.metaOpts.dateFormat = e.target.value; syncMetaTexts(false); };
-$('#showTime').onchange = e=>{ state.metaOpts.showTime = e.target.checked; syncMetaTexts(false); };
-$('#presetSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  state.metaOpts.preset = b.dataset.preset;
-  $$('#presetSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  applyPresetOrds();
-  layoutMeta(); renderPhoto(); renderTexts();
-};
-const metaFontSel = $('#metaFont');
-metaFontSel.innerHTML = FONTS.map(f=>`<option value="${f.key}">${f.label}</option>`).join('');
-metaFontSel.onchange = e=>{ state.metaOpts.font = e.target.value; syncMetaTexts(false); };
-$('#metaSize').oninput = e=>{
-  state.metaOpts.sizeMul = +e.target.value/100;
-  $('#metaSizeVal').textContent = e.target.value+'%';
-  syncMetaTexts(false);
-};
-$('#metaColorSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  state.metaOpts.color = b.dataset.c;
-  $$('#metaColorSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  syncMetaTexts(false);
-};
-$('#saveDefaults').onclick = saveDefaults;
-
-/* --- 텍스트 패널 --- */
-const textStyle = { font:'noto', size:52, color:'#ffffff', pill:'none', align:'center' };
-const fontChips = $('#fontChips');
-fontChips.innerHTML = FONTS.map(f=>`<button class="font-chip${f.key===textStyle.font?' on':''}" data-font="${f.key}" style="font-family:'${f.family}'">${f.label}</button>`).join('');
-fontChips.onclick = e=>{
-  const b = e.target.closest('.font-chip'); if(!b) return;
-  textStyle.font = b.dataset.font;
-  $$('.font-chip').forEach(x=>x.classList.toggle('on', x===b));
-  applyToSelected(t=>{ t.font = textStyle.font; t.userStyled = true; });
-};
-const tColorChips = $('#textColorChips');
-tColorChips.innerHTML = TEXT_COLORS.map(c=>`<button class="chip${c===textStyle.color?' on':''}" data-c="${c}" style="background:${c}"></button>`).join('')
-  + `<label class="chip custom"><input type="color" id="textCustomColor" value="#ffffff">🎨</label>`;
-tColorChips.onclick = e=>{
-  const b = e.target.closest('.chip[data-c]'); if(!b) return;
-  textStyle.color = b.dataset.c;
-  $$('#textColorChips .chip').forEach(x=>x.classList.toggle('on', x===b));
-  applyToSelected(t=>{ t.color = textStyle.color; t.userStyled = true; });
-};
-$('#textCustomColor').oninput = e=>{
-  textStyle.color = e.target.value;
-  $$('#textColorChips .chip').forEach(x=>x.classList.remove('on'));
-  applyToSelected(t=>{ t.color = textStyle.color; t.userStyled = true; });
-};
-$('#textSize').oninput = e=>{
-  textStyle.size = +e.target.value;
-  $('#textSizeVal').textContent = e.target.value;
-  applyToSelected(t=>{ t.size = textStyle.size; t.userStyled = true; });
-};
-$('#pillSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  textStyle.pill = b.dataset.pill;
-  $$('#pillSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  applyToSelected(t=>{ t.pill = textStyle.pill; });
-};
-$('#alignSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  textStyle.align = b.dataset.align;
-  $$('#alignSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  applyToSelected(t=>{ t.align = textStyle.align; });
-};
-$('#textInput').addEventListener('input', e=>{
-  applyToSelected(t=>{ t.text = e.target.value; if(t.kind==='meta') t.edited=true; });
-});
-$('#addTextBtn').onclick = ()=>{
-  const txt = $('#textInput').value.trim() || '텍스트';
-  const maxOrd = Math.max(0, ...state.texts.map(x=>x.ord??0));
-  const t = { id:'t'+(idSeq++), kind:'user', text:txt, x:CW/2, y:CH/2, ord:maxOrd+1,
-    size:textStyle.size, font:textStyle.font, weight:500, color:textStyle.color,
-    pill:textStyle.pill, align:textStyle.align };
-  state.texts.push(t);
-  state.selected = t.id;
-  $('#textInput').value = '';
-  layoutMeta(); renderPhoto(); renderTexts();
-};
-function applyToSelected(fn){
-  const t = findText(state.selected); if(!t) return;
-  fn(t); layoutMeta(); renderPhoto(); renderTexts();
-}
-function syncTextPanel(t){
-  if(!t) return;
-  $('#textInput').value = t.text;
-  $('#textSize').value = t.size; $('#textSizeVal').textContent = Math.round(t.size);
-  $$('.font-chip').forEach(x=>x.classList.toggle('on', x.dataset.font===t.font));
-  $$('#textColorChips .chip').forEach(x=>x.classList.toggle('on', x.dataset.c===t.color));
-  $$('#pillSeg button').forEach(x=>x.classList.toggle('on', x.dataset.pill===(t.pill||'none')));
-  $$('#alignSeg button').forEach(x=>x.classList.toggle('on', x.dataset.align===t.align));
-}
-
-/* --- 배경 패널 --- */
-$('#bgModeSeg').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  state.bg.mode = b.dataset.mode;
-  $$('#bgModeSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  $('#bgBlurOpts').style.display = state.bg.mode==='blur'?'':'none';
-  $('#bgColorOpts').style.display = state.bg.mode==='color'?'':'none';
-  $('#bgGradOpts').style.display = state.bg.mode==='gradient'?'':'none';
-  renderBg();
-};
-$('#bgBlur').oninput = e=>{ state.bg.blur = +e.target.value; $('#bgBlurVal').textContent = e.target.value; renderBg(); };
-$('#bgDimR').oninput = e=>{ state.bg.dim = +e.target.value/100; $('#bgDimVal').textContent = e.target.value+'%'; renderBg(); };
-const bgChips = $('#bgColorChips');
-bgChips.innerHTML = BG_COLORS.map(c=>`<button class="chip" data-c="${c}" style="background:${c}"></button>`).join('')
-  + `<label class="chip custom"><input type="color" id="bgCustomColor" value="#f5ede3">🎨</label>`;
-bgChips.onclick = e=>{
-  const b = e.target.closest('.chip[data-c]'); if(!b) return;
-  state.bg.color = b.dataset.c;
-  $$('#bgColorChips .chip').forEach(x=>x.classList.toggle('on', x===b));
-  renderBg();
-};
-$('#bgCustomColor').oninput = e=>{
-  state.bg.color = e.target.value;
-  $$('#bgColorChips .chip').forEach(x=>x.classList.remove('on'));
-  renderBg();
-};
-$('#gradC1').oninput = e=>{ state.bg.c1 = e.target.value; renderBg(); };
-$('#gradC2').oninput = e=>{ state.bg.c2 = e.target.value; renderBg(); };
-$('#gradFromPhoto').onclick = ()=>{
-  const img = state.photo.img; if(!img){ toast('먼저 사진을 선택해 주세요'); return; }
+// 사진 상/하단 평균색으로 그라데이션 추출
+function gradFromPhoto(){
+  const img = state.photo.img;
+  if(!img){ toast('먼저 사진을 선택해 주세요'); return; }
   const c = document.createElement('canvas'); c.width = 8; c.height = 8;
   const x = c.getContext('2d', {willReadFrequently:true});
   x.drawImage(img, 0, 0, 8, 8);
   const d = x.getImageData(0,0,8,8).data;
   const avg = rows => {
-    let r=0,g=0,b=0,n=0;
-    for(const row of rows) for(let i=0;i<8;i++){ const o=(row*8+i)*4; r+=d[o];g+=d[o+1];b+=d[o+2];n++; }
+    let r=0,g=0,bl=0,n=0;
+    for(const row of rows) for(let i=0;i<8;i++){ const off=(row*8+i)*4; r+=d[off]; g+=d[off+1]; bl+=d[off+2]; n++; }
     const hex = v => Math.round(v/n).toString(16).padStart(2,'0');
-    return '#'+hex(r)+hex(g)+hex(b);
+    return '#'+hex(r)+hex(g)+hex(bl);
   };
   state.bg.c1 = avg([0,1,2]); state.bg.c2 = avg([5,6,7]);
-  $('#gradC1').value = state.bg.c1; $('#gradC2').value = state.bg.c2;
   renderBg();
-};
+  toast('사진 색으로 그라데이션을 만들었어요');
+}
 
 /* =====================================================
    내보내기 (캔버스 렌더)
@@ -1596,36 +1422,8 @@ addEventListener('keydown', e=>{
 });
 
 /* ---------- 초기화 ---------- */
-function applyDefaultsToUI(){
-  const o = state.metaOpts;
-  $('#dateFormat').value = o.dateFormat;
-  $('#showTime').checked = o.showTime;
-  $('#metaFont').value = o.font;
-  $('#metaSize').value = Math.round(o.sizeMul*100);
-  $('#metaSizeVal').textContent = Math.round(o.sizeMul*100)+'%';
-  $$('#presetSeg button').forEach(b=>b.classList.toggle('on', b.dataset.preset===o.preset));
-  $$('#metaColorSeg button').forEach(b=>b.classList.toggle('on', b.dataset.c===o.color));
-  $$('#bgModeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.mode===state.bg.mode));
-  $('#bgBlurOpts').style.display = state.bg.mode==='blur'?'':'none';
-  $('#bgColorOpts').style.display = state.bg.mode==='color'?'':'none';
-  $('#bgGradOpts').style.display = state.bg.mode==='gradient'?'':'none';
-  $('#bgBlur').value = state.bg.blur; $('#bgBlurVal').textContent = state.bg.blur;
-  $('#bgDimR').value = Math.round(state.bg.dim*100); $('#bgDimVal').textContent = Math.round(state.bg.dim*100)+'%';
-  $('#photoRadius').value = state.photo.radius; $('#photoRadiusVal').textContent = state.photo.radius;
-  $$('#ratioSeg button').forEach(b=>b.classList.toggle('on', b.dataset.ratio===state.photo.ratio));
-  $('#photoWidth').value = Math.round(state.photo.width*100);
-  $('#photoWidthVal').textContent = Math.round(state.photo.width*100)+'%';
-}
-
 loadDefaults();
-applyDefaultsToUI();
-setupPanelMode();
 setTab('photo');
-// 모바일은 패널을 닫은 상태로 시작 (미리보기 우선)
-if(!matchMedia('(min-width:900px)').matches){
-  panel.classList.remove('open');
-  $$('#tabbar button').forEach(b=>b.classList.remove('on'));
-}
 renderAll();
 renderMetaList();
 fitStage();
