@@ -319,7 +319,7 @@ select.sel{
           </div>
         </div>
         <button class="btn" id="saveDefaults">⭐ 현재 구성을 기본값으로 저장</button>
-        <p class="hint">각 정보는 화면에서 직접 드래그해 옮기고, 더블탭(더블클릭)하면 내용을 수정할 수 있어요. 위치 정보는 GPS 좌표를 지역명으로 변환해요(인터넷 필요).</p>
+        <p class="hint">사진과 텍스트는 겹치지 않게 한 줄씩 쌓이고 전체가 가운데 정렬돼요. 텍스트를 드래그하면 줄 순서가 바뀌고, 더블탭(더블클릭)하면 내용을 수정할 수 있어요. 위치 정보는 GPS 좌표를 지역명으로 변환해요(인터넷 필요).</p>
       </section>
 
       <!-- 텍스트 -->
@@ -763,50 +763,57 @@ function fitStage(){
 new ResizeObserver(fitStage).observe($('#previewArea'));
 addEventListener('resize', fitStage);
 
-/* ---------- 카드 레이아웃 계산 ----------
-   사진(비율 카드) + 메타 줄들을 하나의 그룹으로 보고 캔버스 세로 중앙에 정렬한다.
-   메타 1행: 날짜 + 위치 (나란히), 2행: 촬영 기기, 3행: 촬영 정보          */
-const META_GAP = 46, LINE_GAP = 20, PAIR_GAP = 70;
+/* ---------- 스택 레이아웃 계산 ----------
+   사진 카드와 모든 텍스트(메타 + 사용자)를 겹침 없이 한 줄씩 세로로 쌓고,
+   전체 그룹을 캔버스 세로 중앙에 정렬한다. 각 요소의 ord 값이 줄 순서.
+   (사진 ord=0 고정, 날짜+위치는 ord가 같으면 한 줄에 나란히)          */
+const ROW_GAP = 22, PHOTO_GAP = 46, PAIR_GAP = 70;
 const measureCtx = document.createElement('canvas').getContext('2d');
 function textWidth(t){
   measureCtx.font = `${t.weight||400} ${t.size}px "${fontFamily(t.font)}", sans-serif`;
   return Math.max(...t.text.split('\n').map(l=>measureCtx.measureText(l).width));
 }
+const elH = t => t.size * 1.35 * t.text.split('\n').length;
 function ratioVal(){
   const p = state.photo;
   if(p.ratio === 'orig') return p.img ? p.img.naturalWidth/p.img.naturalHeight : 3/4;
   const [a,b] = p.ratio.split(':').map(Number);
   return a/b;
 }
-function metaLines(){
-  const get = k => state.texts.find(t=>t.kind==='meta' && t.metaKey===k && !t.hidden && !t.moved);
-  const lines = [];
-  const l1 = [get('datetime'), get('location')].filter(Boolean);
-  const l2 = [get('camera')].filter(Boolean);
-  const l3 = [get('detail')].filter(Boolean);
-  for(const l of [l1,l2,l3]) if(l.length) lines.push(l);
-  return lines;
+function stackRows(){
+  const rows = [];
+  if(state.photo.img){
+    rows.push({type:'photo', ord:0});
+    const vis = k => state.texts.find(t=>t.kind==='meta' && t.metaKey===k && !t.hidden);
+    const dt = vis('datetime'), loc = vis('location');
+    if(dt && loc && dt.ord === loc.ord) rows.push({items:[dt,loc], ord:dt.ord});
+    else { if(dt) rows.push({items:[dt], ord:dt.ord}); if(loc) rows.push({items:[loc], ord:loc.ord}); }
+    for(const k of ['camera','detail']){ const t = vis(k); if(t) rows.push({items:[t], ord:t.ord}); }
+  }
+  for(const t of state.texts) if(t.kind==='user' && !t.hidden) rows.push({items:[t], ord:t.ord ?? 99});
+  rows.sort((a,b)=>(a.ord??0)-(b.ord??0));
+  return rows;
 }
 function computeLayout(){
   const p = state.photo;
   const cw = Math.round(CW * p.width);
   const ch = Math.round(cw / ratioVal());
-  const lines = p.img ? metaLines() : [];
-  const lineH = l => Math.max(...l.map(t=>t.size)) * 1.35;
-  let above = [], below = [];
-  if(state.metaOpts.preset === 'above') above = lines;
-  else if(state.metaOpts.preset === 'split'){ above = lines.slice(0,1); below = lines.slice(1); }
-  else below = lines;
-  const blockH = ls => ls.length ? ls.reduce((s,l)=>s+lineH(l),0) + LINE_GAP*(ls.length-1) : 0;
-  const aH = blockH(above), bH = blockH(below);
-  const total = ch + (aH ? aH+META_GAP : 0) + (bH ? bH+META_GAP : 0);
-  const top = Math.max(50, (CH - total)/2);
-  const card = { left:(CW-cw)/2, top: top + (aH ? aH+META_GAP : 0), w:cw, h:ch };
+  const rows = stackRows();
+  const rowH = r => r.type==='photo' ? ch : Math.max(...r.items.map(elH));
+  const gapAfter = (a,b) => (a.type==='photo' || b.type==='photo') ? PHOTO_GAP : ROW_GAP;
+  let total = 0;
+  rows.forEach((r,i)=>{ total += rowH(r); if(i < rows.length-1) total += gapAfter(r, rows[i+1]); });
+  let y = Math.max(40, (CH - total)/2);
+  let card = null;
   const linePos = [];
-  let y = top;
-  for(const l of above){ const h = lineH(l); linePos.push({items:l, cy:y+h/2}); y += h + LINE_GAP; }
-  y = card.top + card.h + META_GAP;
-  for(const l of below){ const h = lineH(l); linePos.push({items:l, cy:y+h/2}); y += h + LINE_GAP; }
+  rows.forEach((r,i)=>{
+    const h = rowH(r);
+    if(r.type==='photo') card = { left:(CW-cw)/2, top:y, w:cw, h:ch };
+    else linePos.push({ items:r.items, cy:y+h/2 });
+    y += h;
+    if(i < rows.length-1) y += gapAfter(r, rows[i+1]);
+  });
+  if(!card) card = { left:(CW-cw)/2, top:(CH-ch)/2, w:cw, h:ch };
   return { card, linePos };
 }
 
@@ -891,6 +898,16 @@ function renderAll(){ renderBg(); layoutMeta(); renderPhoto(); renderTexts(); }
    메타 텍스트 요소 관리
 ===================================================== */
 const META_STYLE = { datetime:{size:40,weight:500}, location:{size:40,weight:400}, camera:{size:32,weight:400}, detail:{size:26,weight:400} };
+// 배치 프리셋 → 줄 순서 (사진 ord=0 기준, 음수는 사진 위)
+const PRESET_ORDS = {
+  below: {datetime:1,  location:1,  camera:2,  detail:3},
+  above: {datetime:-3, location:-3, camera:-2, detail:-1},
+  split: {datetime:-1, location:-1, camera:1,  detail:2},
+};
+function presetOrd(key){ return (PRESET_ORDS[state.metaOpts.preset] || PRESET_ORDS.below)[key]; }
+function applyPresetOrds(){
+  state.texts.filter(t=>t.kind==='meta').forEach(t=>{ t.ord = presetOrd(t.metaKey); });
+}
 
 function metaText(key){
   const m = state.meta;
@@ -910,8 +927,8 @@ function syncMetaTexts(relayout){
     if(want){
       if(!t){
         t = { id:'m'+(idSeq++), kind:'meta', metaKey:key, text:content, x:CW/2, y:CH/2,
-              size:META_STYLE[key].size*o.sizeMul, font:o.font, weight:META_STYLE[key].weight,
-              color:o.color, pill:'none', align:'center', edited:false, moved:false };
+              ord: presetOrd(key), size:META_STYLE[key].size*o.sizeMul, font:o.font,
+              weight:META_STYLE[key].weight, color:o.color, pill:'none', align:'center', edited:false };
         state.texts.push(t);
         relayout = true;
       }
@@ -929,12 +946,14 @@ function syncMetaTexts(relayout){
   renderMetaList();
 }
 
-// 사용자가 직접 옮기지 않은 메타 텍스트를 카드 기준 자동 배치
+// 스택의 모든 텍스트 줄 좌표를 계산해 적용
 function layoutMeta(){
-  const { linePos } = computeLayout();
+  const { card, linePos } = computeLayout();
   for(const {items, cy} of linePos){
     if(items.length === 1){
-      items[0].x = CW/2; items[0].y = cy; items[0].align = 'center';
+      const t = items[0];
+      t.y = cy;
+      t.x = t.align === 'left' ? card.left : CW/2; // 왼쪽 정렬은 카드 왼쪽 모서리에 맞춤
     } else {
       // 날짜 + 위치를 한 줄에 나란히, 줄 전체를 가운데 정렬
       const ws = items.map(textWidth);
@@ -943,6 +962,19 @@ function layoutMeta(){
       items.forEach((t,i)=>{ t.x = x + ws[i]/2; t.y = cy; t.align = 'center'; x += ws[i] + PAIR_GAP; });
     }
   }
+}
+
+// 드래그로 놓은 위치(y)에 맞춰 줄 순서를 바꾼다
+function reorderText(t, y){
+  const { card, linePos } = computeLayout();
+  const entries = [{ord:0, cy: card.top + card.h/2}];
+  for(const lp of linePos)
+    if(!lp.items.includes(t)) entries.push({ord: lp.items[0].ord ?? 0, cy: lp.cy});
+  entries.sort((a,b)=>a.cy-b.cy);
+  let prev = null, next = null;
+  for(const e of entries){ if(e.cy <= y) prev = e; else { next = e; break; } }
+  t.ord = prev && next ? (prev.ord + next.ord)/2 : prev ? prev.ord + 1 : next ? next.ord - 1 : 1;
+  layoutMeta(); renderPhoto(); renderTexts();
 }
 
 function renderMetaList(){
@@ -996,7 +1028,8 @@ async function loadFile(file){
   const exif = parseExif(buffer) || {};
   if(!exif.date && file.lastModified) exif.date = new Date(file.lastModified);
   state.meta = exif;
-  state.texts.filter(t=>t.kind==='meta').forEach(t=>{ t.edited=false; t.moved=false; });
+  state.texts.filter(t=>t.kind==='meta').forEach(t=>{ t.edited=false; });
+  applyPresetOrds();
 
   renderAll();
   syncMetaTexts(true);
@@ -1084,17 +1117,11 @@ stage.addEventListener('pointermove', e=>{
   }
   if(drag.type === 'text'){
     const t = findText(drag.id); if(!t) return;
-    let nx = drag.ox + (p.x - drag.sx);
-    let ny = drag.oy + (p.y - drag.sy);
+    // 드래그 중엔 손가락을 따라가고, 놓으면 스택의 줄 순서로 스냅된다
+    const nx = drag.ox + (p.x - drag.sx);
+    const ny = drag.oy + (p.y - drag.sy);
     if(Math.abs(p.x-drag.sx)>3||Math.abs(p.y-drag.sy)>3) drag.movedNow = true;
-    // 중앙 스냅
-    const snapX = t.align==='center' && Math.abs(nx - CW/2) < 18;
-    const snapY = Math.abs(ny - CH/2) < 18;
-    if(snapX) nx = CW/2;
-    if(snapY) ny = CH/2;
-    $('#guideV').style.display = snapX ? 'block':'none';
-    $('#guideH').style.display = snapY ? 'block':'none';
-    t.x = nx; t.y = ny; t.moved = true;
+    t.x = nx; t.y = ny;
     const el = textLayer.querySelector(`[data-id="${t.id}"]`);
     if(el){ el.style.left = nx+'px'; el.style.top = ny+'px'; }
   }
@@ -1104,14 +1131,20 @@ function endPointer(e){
   pointers.delete(e.pointerId);
   $('#guideV').style.display='none'; $('#guideH').style.display='none';
   stage.classList.remove('dragging');
-  if(drag && drag.type==='text' && !drag.movedNow){
-    // 탭 → 더블탭 감지
-    const now = Date.now();
-    if(lastTap.id === drag.id && now - lastTap.t < 350){
-      startEdit(drag.id);
-      lastTap = {t:0,id:null};
+  if(drag && drag.type==='text'){
+    if(drag.movedNow){
+      // 놓은 위치에 맞춰 줄 순서 변경 후 스택으로 스냅
+      const t = findText(drag.id);
+      if(t) reorderText(t, stagePoint(e).y);
     } else {
-      lastTap = {t:now, id:drag.id};
+      // 탭 → 더블탭 감지
+      const now = Date.now();
+      if(lastTap.id === drag.id && now - lastTap.t < 350){
+        startEdit(drag.id);
+        lastTap = {t:0,id:null};
+      } else {
+        lastTap = {t:now, id:drag.id};
+      }
     }
   }
   if(pointers.size === 0) drag = null;
@@ -1153,7 +1186,7 @@ function finishEdit(el){
     state.texts = state.texts.filter(x=>x.id!==t.id);
     if(state.selected===t.id) state.selected=null;
   } else { t.text = metaText(t.metaKey); }
-  renderTexts(); syncTextPanel(findText(state.selected));
+  layoutMeta(); renderPhoto(); renderTexts(); syncTextPanel(findText(state.selected));
 }
 
 /* ---------- 선택 툴바 ---------- */
@@ -1161,13 +1194,13 @@ $('#editSelBtn').onclick = ()=>{ if(state.selected) startEdit(state.selected); }
 $('#delSelBtn').onclick = ()=>{
   const t = findText(state.selected); if(!t) return;
   if(t.kind==='meta'){ state.metaOpts.show[t.metaKey] = false; syncMetaTexts(false); }
-  else { state.texts = state.texts.filter(x=>x.id!==t.id); }
+  else { state.texts = state.texts.filter(x=>x.id!==t.id); layoutMeta(); renderPhoto(); }
   state.selected = null; renderTexts(); renderMetaList();
 };
 $('#resetSelBtn').onclick = ()=>{
   const t = findText(state.selected); if(!t) return;
-  if(t.kind==='meta'){ t.edited=false; t.moved=false; t.userStyled=false; syncMetaTexts(true); }
-  else { t.x = CW/2; t.y = CH/2; renderTexts(); }
+  if(t.kind==='meta'){ t.edited=false; t.userStyled=false; t.ord=presetOrd(t.metaKey); syncMetaTexts(true); }
+  else { layoutMeta(); renderPhoto(); renderTexts(); }
 };
 
 /* =====================================================
@@ -1255,7 +1288,7 @@ $('#presetSeg').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
   state.metaOpts.preset = b.dataset.preset;
   $$('#presetSeg button').forEach(x=>x.classList.toggle('on', x===b));
-  state.texts.filter(t=>t.kind==='meta').forEach(t=>t.moved=false);
+  applyPresetOrds();
   layoutMeta(); renderPhoto(); renderTexts();
 };
 const metaFontSel = $('#metaFont');
@@ -1320,17 +1353,18 @@ $('#textInput').addEventListener('input', e=>{
 });
 $('#addTextBtn').onclick = ()=>{
   const txt = $('#textInput').value.trim() || '텍스트';
-  const t = { id:'t'+(idSeq++), kind:'user', text:txt, x:CW/2, y:CH/2,
+  const maxOrd = Math.max(0, ...state.texts.map(x=>x.ord??0));
+  const t = { id:'t'+(idSeq++), kind:'user', text:txt, x:CW/2, y:CH/2, ord:maxOrd+1,
     size:textStyle.size, font:textStyle.font, weight:500, color:textStyle.color,
     pill:textStyle.pill, align:textStyle.align };
   state.texts.push(t);
   state.selected = t.id;
   $('#textInput').value = '';
-  renderTexts();
+  layoutMeta(); renderPhoto(); renderTexts();
 };
 function applyToSelected(fn){
   const t = findText(state.selected); if(!t) return;
-  fn(t); renderTexts();
+  fn(t); layoutMeta(); renderPhoto(); renderTexts();
 }
 function syncTextPanel(t){
   if(!t) return;
