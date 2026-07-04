@@ -44,7 +44,7 @@ header{
 .hbtn:active{transform:scale(.96)}
 .hbtn svg{width:15px;height:15px}
 
-#main{flex:1;display:flex;min-height:0;position:relative}
+#main{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
 #previewArea{
   flex:1;display:flex;align-items:center;justify-content:center;
   padding:14px;min-width:0;position:relative;
@@ -58,7 +58,7 @@ header{
 
 /* 스테이지 레이어 */
 #bgLayer{position:absolute;inset:0}
-#bgLayer img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(1.18);min-width:100%;min-height:100%;object-fit:cover}
+#bgLayer img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;transform:scale(1.18)}
 #bgDim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
 #photoCard{position:absolute;overflow:hidden;will-change:left,top,width,height;background:#222}
 #photoCard img{position:absolute;max-width:none;pointer-events:none}
@@ -810,6 +810,7 @@ function renderPhoto(){
   const p = state.photo, cardEl = $('#photoCard');
   if(!p.img){ cardEl.style.display='none'; return; }
   const { card:r } = computeLayout();
+  if(photoEl.getAttribute('src') !== p.img.src) photoEl.src = p.img.src;
   cardEl.style.display = 'block';
   cardEl.style.left = r.left+'px'; cardEl.style.top = r.top+'px';
   cardEl.style.width = r.w+'px'; cardEl.style.height = r.h+'px';
@@ -1565,6 +1566,11 @@ loadDefaults();
 applyDefaultsToUI();
 setupPanelMode();
 setTab('photo');
+// 모바일은 패널을 닫은 상태로 시작 (미리보기 우선)
+if(!matchMedia('(min-width:900px)').matches){
+  panel.classList.remove('open');
+  $$('#tabbar button').forEach(b=>b.classList.remove('on'));
+}
 renderAll();
 renderMetaList();
 fitStage();
