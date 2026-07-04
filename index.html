@@ -60,7 +60,8 @@ header{
 #bgLayer{position:absolute;inset:0}
 #bgLayer img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(1.18);min-width:100%;min-height:100%;object-fit:cover}
 #bgDim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
-#photoImg{position:absolute;will-change:left,top,width,height;pointer-events:none}
+#photoCard{position:absolute;overflow:hidden;will-change:left,top,width,height;background:#222}
+#photoCard img{position:absolute;max-width:none;pointer-events:none}
 #textLayer{position:absolute;inset:0}
 .text-el{
   position:absolute;white-space:pre-wrap;line-height:1.35;cursor:grab;
@@ -234,7 +235,7 @@ select.sel{
         <div id="stage">
           <div id="bgLayer"></div>
           <div id="bgDim"></div>
-          <img id="photoImg" alt="" draggable="false" style="display:none">
+          <div id="photoCard" style="display:none"><img id="photoImg" alt="" draggable="false"></div>
           <div id="textLayer"></div>
           <div class="guide-v" id="guideV"></div>
           <div class="guide-h" id="guideH"></div>
@@ -251,17 +252,21 @@ select.sel{
       <!-- 사진 -->
       <section class="panel-sec" data-panel="photo">
         <button class="btn primary" id="pickBtn">🖼️ 사진 선택 / 교체</button>
-        <div class="p-title">크기 · 위치</div>
-        <div class="row"><label>크기</label><input type="range" id="photoScale" min="0.2" max="3" step="0.01" value="1"><span class="val" id="photoScaleVal">100%</span></div>
-        <div class="row"><label>모서리</label><input type="range" id="photoRadius" min="0" max="80" step="1" value="28"><span class="val" id="photoRadiusVal">28</span></div>
+        <div class="p-title">사진 비율</div>
         <div class="row">
-          <div class="seg">
-            <button data-fit="width">가로 맞춤</button>
-            <button data-fit="cover">꽉 채움</button>
-            <button data-fit="small">여백 있게</button>
+          <div class="seg" id="ratioSeg">
+            <button data-ratio="3:4" class="on">3:4</button>
+            <button data-ratio="4:5">4:5</button>
+            <button data-ratio="1:1">1:1</button>
+            <button data-ratio="4:3">4:3</button>
+            <button data-ratio="orig">원본</button>
           </div>
         </div>
-        <button class="btn" id="photoReset">위치 초기화</button>
+        <div class="p-title">크기 · 구도</div>
+        <div class="row"><label>너비</label><input type="range" id="photoWidth" min="50" max="100" step="1" value="85"><span class="val" id="photoWidthVal">85%</span></div>
+        <div class="row"><label>확대</label><input type="range" id="photoZoom" min="100" max="300" step="1" value="100"><span class="val" id="photoZoomVal">100%</span></div>
+        <div class="row"><label>모서리</label><input type="range" id="photoRadius" min="0" max="80" step="1" value="28"><span class="val" id="photoRadiusVal">28</span></div>
+        <button class="btn" id="photoReset">구도 초기화</button>
         <div class="p-title">내보내기</div>
         <div class="row"><label>해상도</label>
           <div class="seg" id="exportScaleSeg">
@@ -275,7 +280,7 @@ select.sel{
             <button data-fmt="png">PNG</button>
           </div>
         </div>
-        <p class="hint">사진을 직접 드래그해 위치를, 두 손가락(또는 마우스 휠)으로 크기를 조절할 수 있어요.</p>
+        <p class="hint">사진은 항상 화면 중앙에 배치돼요. 사진을 드래그하면 비율 안에서 보이는 구도가 움직이고, 두 손가락(또는 마우스 휠)으로 확대할 수 있어요.</p>
       </section>
 
       <!-- 정보(메타) -->
@@ -284,10 +289,10 @@ select.sel{
         <div id="metaList"></div>
         <div class="p-title">날짜 형식</div>
         <div class="row"><select class="sel" id="dateFormat">
-          <option value="dot">2026.07.04</option>
-          <option value="kor">2026년 7월 4일</option>
-          <option value="eng">JUL 4, 2026</option>
-          <option value="short">26.07.04</option>
+          <option value="dot">2026. 7. 4 (sat)</option>
+          <option value="kor">2026년 7월 4일 (토)</option>
+          <option value="eng">JUL 4, 2026 (SAT)</option>
+          <option value="short">26. 7. 4 (sat)</option>
         </select></div>
         <div class="row"><label style="width:auto;flex:1">시간 함께 표시</label>
           <label class="switch"><input type="checkbox" id="showTime" checked><i></i></label>
@@ -295,10 +300,9 @@ select.sel{
         <div class="p-title">배치</div>
         <div class="row">
           <div class="seg" id="presetSeg">
-            <button data-preset="photo-under" class="on">사진 아래</button>
-            <button data-preset="bottom-center">하단</button>
-            <button data-preset="bottom-left">왼쪽 하단</button>
-            <button data-preset="top-center">상단</button>
+            <button data-preset="below" class="on">사진 아래</button>
+            <button data-preset="above">사진 위</button>
+            <button data-preset="split">위 · 아래</button>
           </div>
         </div>
         <div class="p-title">스타일</div>
@@ -411,14 +415,15 @@ const TEXT_COLORS = ['#ffffff','#111111','#ffd54a','#ff6b6b','#74c0fc','#8ce99a'
 
 /* ---------- 상태 ---------- */
 const state = {
-  photo: { img:null, scale:1, x:0, y:0, radius:28 },
+  // 사진은 비율이 정해진 카드로 항상 중앙 배치. ox/oy·zoom은 카드 안 구도(크롭)
+  photo: { img:null, ratio:'3:4', width:0.85, zoom:1, ox:0, oy:0, radius:28 },
   bg:    { mode:'blur', color:'#f5ede3', blur:48, dim:0.22, c1:'#3a3a52', c2:'#1a1a24' },
   texts: [],   // {id, kind:'user'|'meta', metaKey, text, x, y, size, font, weight, color, pill, align, edited, moved}
   meta:  {},   // 파싱된 EXIF
   metaOpts: {
     show:{ datetime:true, location:true, camera:true, detail:false },
-    dateFormat:'dot', showTime:true, preset:'photo-under',
-    font:'mono', sizeMul:1, color:'#ffffff',
+    dateFormat:'dot', showTime:true, preset:'below',
+    font:'myeongjo', sizeMul:1, color:'#ffffff',
   },
   export:{ scale:1, fmt:'jpg' },
   selected:null,
@@ -431,7 +436,7 @@ const LS_KEY = 'pokachip-defaults-v1';
 function saveDefaults(){
   const d = { metaOpts: state.metaOpts,
     bg: {mode:state.bg.mode, color:state.bg.color, blur:state.bg.blur, dim:state.bg.dim},
-    photo:{radius: state.photo.radius} };
+    photo:{radius:state.photo.radius, ratio:state.photo.ratio, width:state.photo.width} };
   localStorage.setItem(LS_KEY, JSON.stringify(d));
   toast('기본값으로 저장했어요 ⭐');
 }
@@ -443,7 +448,11 @@ function loadDefaults(){
     if(d.metaOpts?.show) Object.assign(state.metaOpts.show, d.metaOpts.show);
     Object.assign(state.bg, d.bg||{});
     if(d.photo?.radius!=null) state.photo.radius = d.photo.radius;
+    if(d.photo?.ratio) state.photo.ratio = d.photo.ratio;
+    if(d.photo?.width) state.photo.width = d.photo.width;
   }catch(e){}
+  // 구버전에 저장된 배치 프리셋 호환
+  if(!['below','above','split'].includes(state.metaOpts.preset)) state.metaOpts.preset = 'below';
 }
 
 /* ---------- 토스트 ---------- */
@@ -709,12 +718,14 @@ function fmtDatetime(d){
   if(!d) return '';
   const o = state.metaOpts;
   const p2 = n => String(n).padStart(2,'0');
+  const wd = ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
+  const wdKo = ['일','월','화','수','목','금','토'][d.getDay()];
   let ds;
   switch(o.dateFormat){
-    case 'kor':  ds = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`; break;
-    case 'eng':  ds = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][d.getMonth()] + ` ${d.getDate()}, ${d.getFullYear()}`; break;
-    case 'short':ds = `${String(d.getFullYear()).slice(2)}.${p2(d.getMonth()+1)}.${p2(d.getDate())}`; break;
-    default:     ds = `${d.getFullYear()}.${p2(d.getMonth()+1)}.${p2(d.getDate())}`;
+    case 'kor':  ds = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${wdKo})`; break;
+    case 'eng':  ds = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][d.getMonth()] + ` ${d.getDate()}, ${d.getFullYear()} (${wd.toUpperCase()})`; break;
+    case 'short':ds = `${String(d.getFullYear()).slice(2)}. ${d.getMonth()+1}. ${d.getDate()} (${wd})`; break;
+    default:     ds = `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()} (${wd})`;
   }
   if(!o.showTime) return ds;
   let ts;
@@ -748,23 +759,74 @@ function fitStage(){
 new ResizeObserver(fitStage).observe($('#previewArea'));
 addEventListener('resize', fitStage);
 
-function photoRect(){
-  const p = state.photo, img = p.img;
-  if(!img) return null;
-  const bs = CW / img.naturalWidth;
-  const w = img.naturalWidth * bs * p.scale, h = img.naturalHeight * bs * p.scale;
-  return { left:(CW-w)/2 + p.x, top:(CH-h)/2 + p.y, w, h };
+/* ---------- 카드 레이아웃 계산 ----------
+   사진(비율 카드) + 메타 줄들을 하나의 그룹으로 보고 캔버스 세로 중앙에 정렬한다.
+   메타 1행: 날짜 + 위치 (나란히), 2행: 촬영 기기, 3행: 촬영 정보          */
+const META_GAP = 46, LINE_GAP = 20, PAIR_GAP = 70;
+const measureCtx = document.createElement('canvas').getContext('2d');
+function textWidth(t){
+  measureCtx.font = `${t.weight||400} ${t.size}px "${fontFamily(t.font)}", sans-serif`;
+  return Math.max(...t.text.split('\n').map(l=>measureCtx.measureText(l).width));
+}
+function ratioVal(){
+  const p = state.photo;
+  if(p.ratio === 'orig') return p.img ? p.img.naturalWidth/p.img.naturalHeight : 3/4;
+  const [a,b] = p.ratio.split(':').map(Number);
+  return a/b;
+}
+function metaLines(){
+  const get = k => state.texts.find(t=>t.kind==='meta' && t.metaKey===k && !t.hidden && !t.moved);
+  const lines = [];
+  const l1 = [get('datetime'), get('location')].filter(Boolean);
+  const l2 = [get('camera')].filter(Boolean);
+  const l3 = [get('detail')].filter(Boolean);
+  for(const l of [l1,l2,l3]) if(l.length) lines.push(l);
+  return lines;
+}
+function computeLayout(){
+  const p = state.photo;
+  const cw = Math.round(CW * p.width);
+  const ch = Math.round(cw / ratioVal());
+  const lines = p.img ? metaLines() : [];
+  const lineH = l => Math.max(...l.map(t=>t.size)) * 1.35;
+  let above = [], below = [];
+  if(state.metaOpts.preset === 'above') above = lines;
+  else if(state.metaOpts.preset === 'split'){ above = lines.slice(0,1); below = lines.slice(1); }
+  else below = lines;
+  const blockH = ls => ls.length ? ls.reduce((s,l)=>s+lineH(l),0) + LINE_GAP*(ls.length-1) : 0;
+  const aH = blockH(above), bH = blockH(below);
+  const total = ch + (aH ? aH+META_GAP : 0) + (bH ? bH+META_GAP : 0);
+  const top = Math.max(50, (CH - total)/2);
+  const card = { left:(CW-cw)/2, top: top + (aH ? aH+META_GAP : 0), w:cw, h:ch };
+  const linePos = [];
+  let y = top;
+  for(const l of above){ const h = lineH(l); linePos.push({items:l, cy:y+h/2}); y += h + LINE_GAP; }
+  y = card.top + card.h + META_GAP;
+  for(const l of below){ const h = lineH(l); linePos.push({items:l, cy:y+h/2}); y += h + LINE_GAP; }
+  return { card, linePos };
 }
 
 function renderPhoto(){
-  const r = photoRect();
-  if(!r){ photoEl.style.display='none'; return; }
-  photoEl.style.display = 'block';
-  photoEl.style.left = r.left+'px'; photoEl.style.top = r.top+'px';
-  photoEl.style.width = r.w+'px'; photoEl.style.height = r.h+'px';
-  photoEl.style.borderRadius = state.photo.radius+'px';
-  $('#photoScale').value = state.photo.scale;
-  $('#photoScaleVal').textContent = Math.round(state.photo.scale*100)+'%';
+  const p = state.photo, cardEl = $('#photoCard');
+  if(!p.img){ cardEl.style.display='none'; return; }
+  const { card:r } = computeLayout();
+  cardEl.style.display = 'block';
+  cardEl.style.left = r.left+'px'; cardEl.style.top = r.top+'px';
+  cardEl.style.width = r.w+'px'; cardEl.style.height = r.h+'px';
+  cardEl.style.borderRadius = p.radius+'px';
+  const bs = Math.max(r.w/p.img.naturalWidth, r.h/p.img.naturalHeight) * p.zoom;
+  const dw = p.img.naturalWidth*bs, dh = p.img.naturalHeight*bs;
+  // 카드 밖 여백이 생기지 않도록 구도 이동 범위 제한
+  const mx = Math.max(0,(dw-r.w)/2), my = Math.max(0,(dh-r.h)/2);
+  p.ox = Math.min(mx, Math.max(-mx, p.ox));
+  p.oy = Math.min(my, Math.max(-my, p.oy));
+  photoEl.style.width = dw+'px'; photoEl.style.height = dh+'px';
+  photoEl.style.left = (r.w-dw)/2 + p.ox + 'px';
+  photoEl.style.top = (r.h-dh)/2 + p.oy + 'px';
+  $('#photoWidth').value = Math.round(p.width*100);
+  $('#photoWidthVal').textContent = Math.round(p.width*100)+'%';
+  $('#photoZoom').value = Math.round(p.zoom*100);
+  $('#photoZoomVal').textContent = Math.round(p.zoom*100)+'%';
 }
 
 function renderBg(){
@@ -818,12 +880,12 @@ function renderTexts(){
   $('#emptyState').style.display = state.photo.img ? 'none' : 'flex';
 }
 
-function renderAll(){ renderBg(); renderPhoto(); renderTexts(); }
+function renderAll(){ renderBg(); layoutMeta(); renderPhoto(); renderTexts(); }
 
 /* =====================================================
    메타 텍스트 요소 관리
 ===================================================== */
-const META_STYLE = { datetime:{size:44,weight:500}, location:{size:34,weight:400}, camera:{size:29,weight:400}, detail:{size:26,weight:400} };
+const META_STYLE = { datetime:{size:40,weight:500}, location:{size:40,weight:400}, camera:{size:32,weight:400}, detail:{size:26,weight:400} };
 
 function metaText(key){
   const m = state.meta;
@@ -856,37 +918,25 @@ function syncMetaTexts(relayout){
       if(state.selected===t.id) state.selected=null;
     }
   }
-  if(relayout) layoutMeta();
+  layoutMeta();
+  renderPhoto();
   renderTexts();
   renderMetaList();
 }
 
-function layoutMeta(force){
-  const o = state.metaOpts;
-  const items = ['datetime','location','camera','detail']
-    .map(k=>state.texts.find(t=>t.kind==='meta'&&t.metaKey===k&&!t.hidden))
-    .filter(Boolean)
-    .filter(t=>force || !t.moved);
-  if(!items.length) return;
-  const gap = 16;
-  const totalH = items.reduce((s,t)=>s+t.size*1.35,0) + gap*(items.length-1);
-  let x = CW/2, align='center', startY;
-  const pr = photoRect();
-  switch(o.preset){
-    case 'top-center': startY = 140; break;
-    case 'bottom-left': x = 90; align='left'; startY = CH - 140 - totalH; break;
-    case 'bottom-center': startY = CH - 140 - totalH; break;
-    default: { // photo-under
-      const bottom = pr ? pr.top + pr.h : CH*0.75;
-      startY = Math.min(bottom + 70, CH - 110 - totalH);
-      if(startY < 100) startY = CH - 140 - totalH;
+// 사용자가 직접 옮기지 않은 메타 텍스트를 카드 기준 자동 배치
+function layoutMeta(){
+  const { linePos } = computeLayout();
+  for(const {items, cy} of linePos){
+    if(items.length === 1){
+      items[0].x = CW/2; items[0].y = cy; items[0].align = 'center';
+    } else {
+      // 날짜 + 위치를 한 줄에 나란히, 줄 전체를 가운데 정렬
+      const ws = items.map(textWidth);
+      const total = ws.reduce((a,b)=>a+b,0) + PAIR_GAP*(items.length-1);
+      let x = CW/2 - total/2;
+      items.forEach((t,i)=>{ t.x = x + ws[i]/2; t.y = cy; t.align = 'center'; x += ws[i] + PAIR_GAP; });
     }
-  }
-  let y = startY;
-  for(const t of items){
-    const h = t.size*1.35;
-    t.x = x; t.y = y + h/2; t.align = align; t.moved = false;
-    y += h + gap;
   }
 }
 
@@ -934,9 +984,7 @@ async function loadFile(file){
   }
 
   state.photo.img = img;
-  state.photo.x = 0; state.photo.y = 0;
-  // 기본: 가로 맞춤 후 여백 있게 92%
-  state.photo.scale = 0.92;
+  state.photo.zoom = 1; state.photo.ox = 0; state.photo.oy = 0;
 
   // EXIF (RAW도 TIFF 구조에서 그대로 읽힌다)
   const exif = parseExif(buffer) || {};
@@ -989,10 +1037,9 @@ stage.addEventListener('pointerdown', e=>{
   pointers.set(e.pointerId, p);
 
   if(pointers.size === 2 && state.photo.img){
-    // 핀치 시작
+    // 핀치 시작 (카드 안 확대)
     const [a,b] = [...pointers.values()];
-    drag = { type:'pinch', startDist:Math.hypot(a.x-b.x,a.y-b.y), startScale:state.photo.scale,
-             startX:state.photo.x, startY:state.photo.y, mid:{x:(a.x+b.x)/2, y:(a.y+b.y)/2} };
+    drag = { type:'pinch', startDist:Math.hypot(a.x-b.x,a.y-b.y), startScale:state.photo.zoom };
     return;
   }
   const textEl = e.target.closest('.text-el');
@@ -1004,7 +1051,7 @@ stage.addEventListener('pointerdown', e=>{
     renderTexts();
   } else if(state.photo.img){
     state.selected = null; renderTexts();
-    drag = { type:'photo', sx:p.x, sy:p.y, ox:state.photo.x, oy:state.photo.y };
+    drag = { type:'photo', sx:p.x, sy:p.y, ox:state.photo.ox, oy:state.photo.oy };
     stage.classList.add('dragging');
   } else {
     state.selected = null; renderTexts();
@@ -1020,21 +1067,13 @@ stage.addEventListener('pointermove', e=>{
   if(drag.type === 'pinch' && pointers.size >= 2){
     const [a,b] = [...pointers.values()];
     const dist = Math.hypot(a.x-b.x, a.y-b.y);
-    const r = dist / drag.startDist;
-    const ns = Math.min(4, Math.max(0.2, drag.startScale * r));
-    const rr = ns / drag.startScale;
-    // 핀치 중심 기준 줌
-    const cx = CW/2 + drag.startX, cy = CH/2 + drag.startY;
-    const mid = {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
-    state.photo.scale = ns;
-    state.photo.x = (drag.mid.x + (cx - drag.mid.x)*rr) - CW/2 + (mid.x - drag.mid.x);
-    state.photo.y = (drag.mid.y + (cy - drag.mid.y)*rr) - CH/2 + (mid.y - drag.mid.y);
+    state.photo.zoom = Math.min(4, Math.max(1, drag.startScale * dist / drag.startDist));
     renderPhoto();
     return;
   }
   if(drag.type === 'photo'){
-    state.photo.x = drag.ox + (p.x - drag.sx);
-    state.photo.y = drag.oy + (p.y - drag.sy);
+    state.photo.ox = drag.ox + (p.x - drag.sx);
+    state.photo.oy = drag.oy + (p.y - drag.sy);
     renderPhoto();
   }
   if(drag.type === 'text'){
@@ -1080,7 +1119,7 @@ $('#previewArea').addEventListener('wheel', e=>{
   if(!state.photo.img) return;
   e.preventDefault();
   const f = Math.exp(-e.deltaY * 0.0015);
-  state.photo.scale = Math.min(4, Math.max(0.2, state.photo.scale * f));
+  state.photo.zoom = Math.min(4, Math.max(1, state.photo.zoom * f));
   renderPhoto();
 }, {passive:false});
 
@@ -1157,20 +1196,25 @@ function setupPanelMode(){
 matchMedia('(min-width:900px)').addEventListener('change', setupPanelMode);
 
 /* --- 사진 패널 --- */
-$('#photoScale').oninput = e=>{ state.photo.scale = +e.target.value; renderPhoto(); };
-$('#photoRadius').oninput = e=>{ state.photo.radius = +e.target.value; $('#photoRadiusVal').textContent = e.target.value; renderPhoto(); };
-$('#photoReset').onclick = ()=>{ state.photo.x=0; state.photo.y=0; state.photo.scale=0.92; renderPhoto(); };
-$$('[data-fit]').forEach(b=> b.onclick = ()=>{
-  const p = state.photo; if(!p.img) return;
-  p.x = 0; p.y = 0;
-  if(b.dataset.fit==='width') p.scale = 1;
-  if(b.dataset.fit==='small') p.scale = 0.85;
-  if(b.dataset.fit==='cover'){
-    const bs = CW/p.img.naturalWidth;
-    p.scale = Math.max(1, CH/(p.img.naturalHeight*bs));
-  }
+$('#photoWidth').oninput = e=>{
+  state.photo.width = +e.target.value/100;
+  $('#photoWidthVal').textContent = e.target.value+'%';
+  layoutMeta(); renderPhoto(); renderTexts();
+};
+$('#photoZoom').oninput = e=>{
+  state.photo.zoom = +e.target.value/100;
+  $('#photoZoomVal').textContent = e.target.value+'%';
   renderPhoto();
-});
+};
+$('#photoRadius').oninput = e=>{ state.photo.radius = +e.target.value; $('#photoRadiusVal').textContent = e.target.value; renderPhoto(); };
+$('#photoReset').onclick = ()=>{ state.photo.zoom=1; state.photo.ox=0; state.photo.oy=0; renderPhoto(); };
+$('#ratioSeg').onclick = e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  state.photo.ratio = b.dataset.ratio;
+  state.photo.ox = 0; state.photo.oy = 0;
+  $$('#ratioSeg button').forEach(x=>x.classList.toggle('on', x===b));
+  layoutMeta(); renderPhoto(); renderTexts();
+};
 $('#exportScaleSeg').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
   state.export.scale = +b.dataset.x;
@@ -1190,7 +1234,7 @@ $('#presetSeg').onclick = e=>{
   state.metaOpts.preset = b.dataset.preset;
   $$('#presetSeg button').forEach(x=>x.classList.toggle('on', x===b));
   state.texts.filter(t=>t.kind==='meta').forEach(t=>t.moved=false);
-  layoutMeta(true); renderTexts();
+  layoutMeta(); renderPhoto(); renderTexts();
 };
 const metaFontSel = $('#metaFont');
 metaFontSel.innerHTML = FONTS.map(f=>`<option value="${f.key}">${f.label}</option>`).join('');
@@ -1438,13 +1482,16 @@ async function exportImage(){
   else if(state.photo.img){ drawBlurredBg(ctx, state.photo.img); }
   else { ctx.fillStyle = '#1a1a20'; ctx.fillRect(0,0,CW,CH); }
 
-  // 사진
-  const r = photoRect();
-  if(r){
+  // 사진 (카드 크롭 — 미리보기와 동일한 계산)
+  if(state.photo.img){
+    const p = state.photo;
+    const { card:r } = computeLayout();
     ctx.save();
-    roundRectPath(ctx, r.left, r.top, r.w, r.h, state.photo.radius);
+    roundRectPath(ctx, r.left, r.top, r.w, r.h, p.radius);
     ctx.clip();
-    ctx.drawImage(state.photo.img, r.left, r.top, r.w, r.h);
+    const bs = Math.max(r.w/p.img.naturalWidth, r.h/p.img.naturalHeight) * p.zoom;
+    const dw = p.img.naturalWidth*bs, dh = p.img.naturalHeight*bs;
+    ctx.drawImage(p.img, r.left + (r.w-dw)/2 + p.ox, r.top + (r.h-dh)/2 + p.oy, dw, dh);
     ctx.restore();
   }
   // 텍스트
@@ -1509,6 +1556,9 @@ function applyDefaultsToUI(){
   $('#bgBlur').value = state.bg.blur; $('#bgBlurVal').textContent = state.bg.blur;
   $('#bgDimR').value = Math.round(state.bg.dim*100); $('#bgDimVal').textContent = Math.round(state.bg.dim*100)+'%';
   $('#photoRadius').value = state.photo.radius; $('#photoRadiusVal').textContent = state.photo.radius;
+  $$('#ratioSeg button').forEach(b=>b.classList.toggle('on', b.dataset.ratio===state.photo.ratio));
+  $('#photoWidth').value = Math.round(state.photo.width*100);
+  $('#photoWidthVal').textContent = Math.round(state.photo.width*100)+'%';
 }
 
 loadDefaults();
