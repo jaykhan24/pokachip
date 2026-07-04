@@ -262,6 +262,10 @@ select.sel{
             <button data-ratio="orig">원본</button>
           </div>
         </div>
+        <div class="row">
+          <button class="btn small" id="rotL" style="flex:1">↺ 왼쪽 회전</button>
+          <button class="btn small" id="rotR" style="flex:1">↻ 오른쪽 회전</button>
+        </div>
         <div class="p-title">크기 · 구도</div>
         <div class="row"><label>너비</label><input type="range" id="photoWidth" min="50" max="100" step="1" value="85"><span class="val" id="photoWidthVal">85%</span></div>
         <div class="row"><label>확대</label><input type="range" id="photoZoom" min="100" max="300" step="1" value="100"><span class="val" id="photoZoomVal">100%</span></div>
@@ -985,6 +989,7 @@ async function loadFile(file){
   }
 
   state.photo.img = img;
+  state.photo.original = img; state.photo.rot = 0;
   state.photo.zoom = 1; state.photo.ox = 0; state.photo.oy = 0;
 
   // EXIF (RAW도 TIFF 구조에서 그대로 읽힌다)
@@ -1209,6 +1214,22 @@ $('#photoZoom').oninput = e=>{
 };
 $('#photoRadius').oninput = e=>{ state.photo.radius = +e.target.value; $('#photoRadiusVal').textContent = e.target.value; renderPhoto(); };
 $('#photoReset').onclick = ()=>{ state.photo.zoom=1; state.photo.ox=0; state.photo.oy=0; renderPhoto(); };
+// 90° 회전 — 화질 누적 손실이 없도록 항상 원본에서 누적 각도로 한 번에 회전
+let rotating = false;
+async function rotatePhoto(dir){
+  const p = state.photo;
+  if(!p.original || rotating) return;
+  rotating = true;
+  try{
+    p.rot = ((p.rot||0) + (dir > 0 ? 90 : 270)) % 360;
+    const map = {0:1, 90:6, 180:3, 270:8}; // 각도 → EXIF Orientation
+    p.img = p.rot === 0 ? p.original : await orientImage(p.original, map[p.rot]);
+    p.ox = 0; p.oy = 0;
+    renderBg(); layoutMeta(); renderPhoto(); renderTexts();
+  } finally { rotating = false; }
+}
+$('#rotL').onclick = ()=>rotatePhoto(-1);
+$('#rotR').onclick = ()=>rotatePhoto(1);
 $('#ratioSeg').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
   state.photo.ratio = b.dataset.ratio;
